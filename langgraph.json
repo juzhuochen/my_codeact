@@ -1,0 +1,8 @@
+{
+    "dependencies": [
+        "."
+    ],
+    "graphs": {
+        "test_codeact": "./tests/test_codeact.py:agent"
+    }
+}
