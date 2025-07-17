@@ -1,6 +1,6 @@
 """CodeAct节点函数实现"""
 
-from typing import Callable, Any, Dict
+from typing import Callable, Any, Dict, Optional
 from langchain_core.language_models import BaseChatModel
 from langgraph.types import Command
 
@@ -17,10 +17,12 @@ class CodeActNodes:
         model: BaseChatModel,
         eval_fn: Callable[[str, Dict[str, Any]], tuple[str, Dict[str, Any]]],
         system_prompt: str,
+        executor: Optional[Any] = None,  # 新增：用于管理jupyter executor
     ):
         self.model = model
         self.eval_fn = eval_fn
         self.system_prompt = system_prompt
+        self.executor = executor  # 用于生命周期管理
 
     def code_generator(self, state: CodeActState) -> Command:
         """
@@ -84,19 +86,18 @@ class CodeActNodes:
 
     def code_executor(self, state: CodeActState) -> Command:
         """
-        代码执行节点 - 在沙盒中执行代码
+        代码执行节点 - 在jupyter kernel中执行代码
         """
         code = state.get("extracted_code", "")
         existing_context = state.get("execution_context", {})
 
-        # 准备执行环境
-        execution_env = {**existing_context, **state.get("available_tools", {})}
-
         try:
-            # 执行代码
-            output, new_vars = self.eval_fn(code, execution_env)
-
-            # 更新执行上下文
+            # 使用jupyter executor执行代码
+            # 注意：jupyter kernel会自动维护变量状态，所以不需要传递context
+            print(code)
+            output, new_vars = self.eval_fn(code, existing_context)
+            print(output)
+            # 更新执行上下文（对于jupyter，这主要是为了兼容性）
             updated_context = {**existing_context, **new_vars}
 
             return Command(
@@ -123,7 +124,10 @@ class CodeActNodes:
         result = state.get("execution_result", "")
 
         # 将执行结果作为用户消息添加到对话中
-        result_message = {"role": "user", "content": f"执行结果:\n{result}"}
+        result_message = {
+            "role": "user", 
+            "content": f"执行结果:\n\n{result}\n"
+            }
 
         # 检查是否达到最大迭代次数
         if state.get("iteration_count", 0) >= state.get("max_iterations", 10):
@@ -161,3 +165,12 @@ class CodeActNodes:
             "content": f"已达到最大迭代次数({state['max_iterations']})，任务可能未完全完成。",
         }
         return Command(update={"messages": [limit_message]})
+
+    def cleanup(self):
+        """清理资源，关闭jupyter kernel"""
+        if self.executor and hasattr(self.executor, 'shutdown_kernel'):
+            self.executor.shutdown_kernel()
+    
+    def __del__(self):
+        """析构函数，确保资源清理"""
+        self.cleanup()

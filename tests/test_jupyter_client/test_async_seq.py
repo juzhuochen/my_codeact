@@ -13,7 +13,7 @@ async def execute_sequential_tasks():
     try:
         # 任务列表：每个任务是一个 Python 代码字符串
         tasks = [
-#            'x = 10',
+            'x = 10',
             'y = x * 2',  # 依赖于上一个任务定义的 x
             'print(f"x={x}, y={y}")'
         ]

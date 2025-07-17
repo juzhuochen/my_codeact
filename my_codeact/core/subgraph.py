@@ -9,16 +9,19 @@ from langgraph.graph import StateGraph, START, END
 from .state import CodeActState, create_initial_state
 from .nodes import CodeActNodes
 from ..utils.prompt_builder import build_system_prompt
-
+from .jupyter_executor import create_jupyter_eval_fn
 
 def create_codeact_subgraph(
     model: BaseChatModel,
     tools: Sequence[Union[StructuredTool, Callable]],
-    eval_fn: Callable[[str, Dict[str, Any]], tuple[str, Dict[str, Any]]],
+    eval_fn: Callable[[str, Dict[str, Any]], tuple[str, Dict[str, Any]]] = None,
     *,
     max_iterations: int = 10,
     base_prompt: Optional[str] = None,
     include_examples: bool = True,
+    use_jupyter: bool = True,  # 是否使用jupyter执行器
+    kernel_name: str = 'python3',  # 内核名称
+    timeout: int = 10,  # 超时设置
 ) -> StateGraph:
     """
     创建CodeAct子图
@@ -30,7 +33,9 @@ def create_codeact_subgraph(
         max_iterations: 最大迭代次数
         base_prompt: 基础提示
         include_examples: 是否包含示例
-
+        use_jupyter: 是否使用jupyter执行器
+        kernel_name: jupyter内核名称
+        timeout: 代码执行超时时间
     Returns:
         配置好的StateGraph
     """
@@ -50,9 +55,23 @@ def create_codeact_subgraph(
     system_prompt = build_system_prompt(
         tools=tools_context, base_prompt=base_prompt, include_examples=include_examples
     )
-
+    # 选择执行函数
+    executor = None
+    if eval_fn is None:
+        if use_jupyter:
+            eval_fn, executor = create_jupyter_eval_fn(
+                kernel_name=kernel_name, timeout=timeout
+            )
+        else:
+            eval_fn = create_simple_eval_fn()
     # 创建节点实例
-    nodes = CodeActNodes(model=model, eval_fn=eval_fn, system_prompt=system_prompt)
+    # 创建节点实例
+    nodes = CodeActNodes(
+        model=model, 
+        eval_fn=eval_fn, 
+        system_prompt=system_prompt,
+        executor=executor  # 传递executor以便生命周期管理
+    )
 
     # 创建状态图
     workflow = StateGraph(CodeActState)
@@ -126,17 +145,12 @@ def create_simple_eval_fn() -> (
     return eval_fn
 
 
-# TODO: use Secure eval function
-def secure_eval_fn():
-    """docker"""
-    pass
-
-
 # 便捷函数用于快速创建和使用
 def create_codeact_agent(
     model: BaseChatModel,
     tools: Sequence[Union[StructuredTool, Callable]] = None,
     eval_fn: Optional[Callable] = None,
+    use_jupyter: bool = True,
     **kwargs,
 ):
     """
@@ -154,13 +168,61 @@ def create_codeact_agent(
     if tools is None:
         tools = []
 
-    if eval_fn is None:
-        eval_fn = create_simple_eval_fn()
-
     # 创建子图
     subgraph = create_codeact_subgraph(
-        model=model, tools=tools, eval_fn=eval_fn, **kwargs
+        model=model, tools=tools, eval_fn=eval_fn, use_jupyter=use_jupyter, **kwargs
     )
 
     # 编译并返回
     return subgraph.compile()
+
+
+# 新增：创建带有生命周期管理的智能体包装器
+class CodeActAgent:
+    """CodeAct智能体包装器，提供生命周期管理"""
+    
+    def __init__(
+        self,
+        model: BaseChatModel,
+        tools: Sequence[Union[StructuredTool, Callable]] = None,
+        use_jupyter: bool = True,
+        **kwargs
+    ):
+        self.subgraph = create_codeact_subgraph(
+            model=model, tools=tools or [], use_jupyter=use_jupyter, **kwargs
+        )
+        self.agent = self.subgraph.compile()
+        self.nodes = None
+        
+        # 获取nodes实例以便管理生命周期
+        if hasattr(self.subgraph, 'nodes'):
+            # 查找CodeActNodes实例
+            for node_name, node_func in self.subgraph.nodes.items():
+                if hasattr(node_func, 'cleanup'):
+                    self.nodes = node_func
+                    break
+    
+    def invoke(self, state):
+        """调用智能体"""
+        return self.agent.invoke(state)
+    
+    def stream(self, state):
+        """流式调用智能体"""
+        return self.agent.stream(state)
+    
+    def cleanup(self):
+        """清理资源"""
+        if self.nodes:
+            self.nodes.cleanup()
+    
+    def __enter__(self):
+        """上下文管理器支持"""
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """上下文管理器支持"""
+        self.cleanup()
+    
+    def __del__(self):
+        """析构函数"""
+        self.cleanup()

@@ -31,11 +31,20 @@ def build_system_prompt(
     core_instruction = """
 你是一个CodeAct智能助手。你需要通过编写和执行Python代码来完成任务。
 
-规则:
+执行规则:
 1. 使用Python代码块(```python)来执行操作
-2. 使用print()输出你想要展示给用户的结果
+2. 系统会显示完整的执行过程，包括代码、输出、返回值等
 3. 可以引用之前代码片段中定义的变量
 4. 如果不需要执行代码，直接用文本回复用户
+5. 建议在代码中使用print()来输出中间结果，便于调试
+
+输出说明:
+- 📝 显示实际执行的代码
+- 📤 显示print()等标准输出  
+- 💡 显示表达式的返回值
+- 🎨 显示matplotlib图表等可视化内容
+- ⚠️ 显示警告信息
+- ✅ 表示代码执行完成
 
 除了Python标准库，你还可以使用以下工具函数:
 """
@@ -60,19 +69,36 @@ def build_system_prompt(
     if include_examples:
         examples = """
 
-示例:
+示例对话:
 用户: 计算1到10的平方和
-助手: ```python
+助手: 我来计算1到10的平方和:
+
+```python
 squares = [i**2 for i in range(1, 11)]
-result = sum(squares)
-print(f"1到10的平方和是: {result}")
+total = sum(squares)
+print(f"各数的平方: {squares}")
+print(f"平方和: {total}")
 ```
 
-用户: 获取当前时间
-助手: ```python
-import datetime
-now = datetime.datetime.now()
-print(f"当前时间: {now}")
+用户: 创建一个简单的数据可视化
+助手: 我来创建一个简单的图表:
+
+```python
+import matplotlib.pyplot as plt
+import numpy as np
+
+x = np.linspace(0, 10, 100)
+y = np.sin(x)
+
+plt.figure(figsize=(8, 6))
+plt.plot(x, y, 'b-', linewidth=2)
+plt.title('正弦函数图像')
+plt.xlabel('x')
+plt.ylabel('sin(x)')
+plt.grid(True)
+plt.show()
+
+print("图表已生成完成!")
 ```
 """
         prompt_parts.append(examples)
@@ -91,6 +117,7 @@ def build_error_recovery_prompt(error_msg: Optional[str], code: Optional[str]) -
     Returns:
         错误恢复提示
     """
+    
     return f"""
 执行代码时发生错误:
 
