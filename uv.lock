@@ -1084,6 +1084,11 @@ dependencies = [
     { name = "langgraph-cli", extra = ["inmem"] },
 ]
 
+[package.dev-dependencies]
+dev = [
+    { name = "langgraph" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "httpx", specifier = ">=0.28.1" },
@@ -1096,6 +1101,9 @@ requires-dist = [
     { name = "langgraph", specifier = ">=0.5.3" },
     { name = "langgraph-cli", extras = ["inmem"], specifier = ">=0.3.4" },
 ]
+
+[package.metadata.requires-dev]
+dev = [{ name = "langgraph", specifier = ">=0.5.3" }]
 
 [[package]]
 name = "mypy-extensions"

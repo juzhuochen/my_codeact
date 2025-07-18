@@ -21,3 +21,8 @@ dependencies = [
     "langgraph-cli[inmem]>=0.3.4",
 ]
 [tool.setuptools.packages.find] # 自动发现所有包，最简单的配置
+
+[dependency-groups]
+dev = [
+    "langgraph>=0.5.3",
+]

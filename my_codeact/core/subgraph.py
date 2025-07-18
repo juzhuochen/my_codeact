@@ -14,11 +14,10 @@ from .jupyter_executor import create_jupyter_eval_fn
 def create_codeact_subgraph(
     model: BaseChatModel,
     tools: Sequence[Union[StructuredTool, Callable]],
-    eval_fn: Callable[[str, Dict[str, Any]], tuple[str, Dict[str, Any]]] = None,
+    eval_fn: Optional[Callable[[str, Dict[str, Any]], tuple[str, Dict[str, Any]]]] = None,
     *,
     max_iterations: int = 10,
     base_prompt: Optional[str] = None,
-    include_examples: bool = True,
     use_jupyter: bool = True,  # 是否使用jupyter执行器
     kernel_name: str = 'python3',  # 内核名称
     timeout: int = 10,  # 超时设置
@@ -32,7 +31,6 @@ def create_codeact_subgraph(
         eval_fn: 代码执行函数
         max_iterations: 最大迭代次数
         base_prompt: 基础提示
-        include_examples: 是否包含示例
         use_jupyter: 是否使用jupyter执行器
         kernel_name: jupyter内核名称
         timeout: 代码执行超时时间
@@ -53,7 +51,7 @@ def create_codeact_subgraph(
 
     # 构建系统提示
     system_prompt = build_system_prompt(
-        tools=tools_context, base_prompt=base_prompt, include_examples=include_examples
+        tools=tools_context, base_prompt=base_prompt
     )
     # 选择执行函数
     executor = None
@@ -148,7 +146,7 @@ def create_simple_eval_fn() -> (
 # 便捷函数用于快速创建和使用
 def create_codeact_agent(
     model: BaseChatModel,
-    tools: Sequence[Union[StructuredTool, Callable]] = None,
+    tools: Optional[Sequence[Union[StructuredTool, Callable]]] = None,
     eval_fn: Optional[Callable] = None,
     use_jupyter: bool = True,
     **kwargs,
@@ -184,7 +182,7 @@ class CodeActAgent:
     def __init__(
         self,
         model: BaseChatModel,
-        tools: Sequence[Union[StructuredTool, Callable]] = None,
+        tools: Optional[Sequence[Union[StructuredTool, Callable]]] = None,
         use_jupyter: bool = True,
         **kwargs
     ):

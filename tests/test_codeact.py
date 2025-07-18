@@ -7,14 +7,14 @@ from my_codeact.core.subgraph import CodeActAgent, create_codeact_agent
 # 示例1：展示详细执行过程
 def example_detailed_output():
     """展示详细的代码执行过程"""
-    model = ChatOllama(model="qwen3:1.7b")
+    model = ChatOllama(model="mistral:7b")
     
     with CodeActAgent(model=model, use_jupyter=True) as agent:
         # 测试包含多种输出的代码
         task = """
         请执行以下任务，展示完整的执行过程:
-        1. 创建一个随机数字列表，大小为1000个元素
-        2. 计算数字之和
+        1. 创建一个随机的整数数字列表，大小为99个元素
+        2. 计算列表的数字和以及最大最小值
         3. 输出结果
         """
         
@@ -31,7 +31,7 @@ def example_detailed_output():
 # 示例2：展示不同类型的输出
 def example_different_outputs():
     """展示不同类型的输出效果"""
-    model = ChatOllama(model="qwen3:1.7b")
+    model = ChatOllama(model="mistral:7b")
     
     test_cases = [
         {
@@ -80,14 +80,15 @@ if __name__ == "__main__":
     print("=== 详细执行过程示例 ===")
     example_detailed_output()
     
-    print("\n=== 不同输出类型示例 ===") 
-    example_different_outputs()
+    #print("\n=== 不同输出类型示例 ===") 
+   # example_different_outputs()
+    exit()
 
 
 # 示例2：使用上下文管理器（推荐用于生产环境）
 def example_context_manager():
     """使用上下文管理器的示例"""
-    model = ChatOllama(model="qwen3:1.7b")
+    model = ChatOllama(model="mistral:7b")
     
     # 使用上下文管理器确保资源清理
     with CodeActAgent(
@@ -122,7 +123,7 @@ def example_context_manager():
 # 示例3：测试魔法命令
 def example_magic_commands():
     """测试jupyter魔法命令"""
-    model = ChatOllama(model="qwen3:1.7b")
+    model = ChatOllama(model="mistral:7b")
     
     with CodeActAgent(model=model, use_jupyter=True) as agent:
         # 测试bash命令
@@ -138,7 +139,7 @@ def example_magic_commands():
 # 示例4：比较jupyter和简单执行器
 def example_comparison():
     """比较jupyter执行器和简单执行器"""
-    model = ChatOllama(model="qwen3:1.7b")
+    model = ChatOllama(model="mistral:7b")
     
     test_code = """
     import numpy as np
@@ -171,7 +172,7 @@ def example_comparison():
 # 示例5：错误处理和重试
 def example_error_handling():
     """测试错误处理和重试机制"""
-    model = ChatOllama(model="qwen3:1.7b")
+    model = ChatOllama(model="mistral:7b")
     
     with CodeActAgent(model=model, use_jupyter=True) as agent:
         # 故意制造一个错误

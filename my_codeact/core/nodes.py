@@ -6,7 +6,6 @@ from langgraph.types import Command
 
 from ..core.state import CodeActState
 from ..utils.code_extractor import extract_code_blocks, validate_code_syntax
-from ..utils.prompt_builder import build_error_recovery_prompt
 
 
 class CodeActNodes:
@@ -33,12 +32,6 @@ class CodeActNodes:
             "messages"
         ]
 
-        # 如果有错误，添加错误恢复提示
-        if state.get("last_error") and state.get("extracted_code"):
-            error_prompt = build_error_recovery_prompt(
-                state["last_error"], state["extracted_code"]
-            )
-            messages.append({"role": "user", "content": error_prompt})
 
         # 调用LLM
         response = self.model.invoke(messages)
