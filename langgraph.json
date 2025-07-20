@@ -3,6 +3,6 @@
         "."
     ],
     "graphs": {
-        "test_codeact": "./tests/test_codeact.py:agent"
+        "test_codeact": "./tests/test_tool.py:codeact"
     }
 }

@@ -4,9 +4,9 @@ import inspect
 from typing import Optional, Dict, Any
 from langchain_core.tools import StructuredTool
 
-
+# omit the inputs
 def build_system_prompt(
-    tools: Optional[Dict[str, Any]],
+    tools: Optional[Dict[str, Any]] = None,
     base_prompt: Optional[str] = None,
 ) -> str:
     """
@@ -28,7 +28,7 @@ def build_system_prompt(
     # 核心指令
     core_instruction = """
 #角色：
-你是一个智能助手。你需要通过编写和执行Python代码来完成任务。
+你是一个智能助手。你需要通过编写Python代码, 调用 execute_jupyter_code 工具来完成任务。
 
 执行规则:
 1. 使用Python代码块(```python)来执行操作
@@ -47,4 +47,4 @@ def build_system_prompt(
 """
     prompt_parts.append(core_instruction)
     # other instruction
-    return prompt_parts
+    return "\n\n".join(prompt_parts) 
