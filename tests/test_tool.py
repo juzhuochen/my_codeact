@@ -4,14 +4,14 @@ from typing_extensions import Optional, Literal, TypedDict, Annotated, cast
 from langgraph.types import Command
 from langgraph.graph import add_messages
 from langchain_core.messages import ToolCall, HumanMessage,AIMessage, ToolMessage, AnyMessage,SystemMessage
-from my_codeact.utils.prompt_builder import build_system_prompt
+from src.utils.prompt_builder import build_system_prompt
 from langchain.chat_models import init_chat_model
 
 
 from langgraph.prebuilt import ToolNode
 # get all tools
 # tool defined by "@tool"
-from my_codeact.tools.jupyter_tool import JUPYTER_TOOLS
+from src.tools.jupyter_tool import JUPYTER_TOOLS
 tools = JUPYTER_TOOLS
 tool_node = ToolNode(tools)
 

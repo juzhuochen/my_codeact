@@ -1,4 +1,4 @@
-from my_codeact.tools.jupyter_tool import configure_jupyter_modules
+from src.tools.jupyter_tool import configure_jupyter_modules
 from langchain.chat_models import init_chat_model
 from langgraph.prebuilt import ToolNode
 
@@ -9,7 +9,7 @@ configure_jupyter_modules(
 )
 llm = init_chat_model("ollama:qwen3:32b")
 
-from my_codeact.tools.jupyter_tool import execute_jupyter_code
+from src.tools.jupyter_tool import execute_jupyter_code
 code = """
 import S_S_SyncComp as SA
 
