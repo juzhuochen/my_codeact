@@ -1,0 +1,8 @@
+{
+  "module_paths": [
+    "my_codeact.test_data"
+  ],
+  "auto_imports": [
+    "import cloudpss"
+  ]
+}

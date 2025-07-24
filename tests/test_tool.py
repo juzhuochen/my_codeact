@@ -24,7 +24,7 @@ class AgentState(TypedDict):
     #code: Optional[str]
     #exec_result: Optional[str]
 
-llm = init_chat_model("ollama:qwen2.5:3b")
+llm = init_chat_model("ollama:qwen3:32b")
 
 def call_model(state: AgentState) -> Command[Literal["tool_executor", "__end__"]]:
     
