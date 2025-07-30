@@ -14,3 +14,5 @@ wheels/
 
 # langgraph
 .langgraph_api
+
+tests/test_doc_split_res/split/

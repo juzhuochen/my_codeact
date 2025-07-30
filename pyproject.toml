@@ -29,10 +29,13 @@ dependencies = [
     "plotly>=6.2.0",
     "pydantic>=2.11.7",
     "scipy>=1.16.0",
+    "langchain-core>=0.3.69",
 ]
 [tool.setuptools.packages.find] # 自动发现所有包，最简单的配置
 
 [dependency-groups]
 dev = [
     "langgraph>=0.5.3",
+    "markdown>=3.8.2",
+    "unstructured>=0.18.11",
 ]
