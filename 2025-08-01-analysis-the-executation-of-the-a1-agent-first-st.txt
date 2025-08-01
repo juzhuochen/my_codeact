@@ -1,0 +1,148 @@
+╭───────────────────────────────────────────────────╮
+│ ✻ Welcome to Claude Code!                         │
+│                                                   │
+│   /help for help, /status for your current setup  │
+│                                                   │
+│   cwd: /home/zhuo/downloads/Biomni                │
+╰───────────────────────────────────────────────────╯
+
+ Tips for getting started:
+
+ 1. Run /init to create a CLAUDE.md file with instructions for Claude
+ 2. Use Claude to help with file analysis, editing, bash commands and git
+ 3. Be as specific as you would with another engineer for the best results
+ 4. ✔ Run /terminal-setup to set up terminal integration
+
+> analysis the executation of the a1 agent. first stage, give the big picture of the workflow, focus on core logic.
+   response in zh-cn
+
+● 我来分析a1 agent的执行流程。首先让我搜索相关代码来了解整体架构。
+
+● Update Todos
+  ⎿  ☐ 搜索a1 agent相关代码文件  
+     ☐ 分析核心执行逻辑和工作流程
+     ☐ 总结整体架构和关键组件
+
+● Search(pattern: "a1.*agent|A1.*Agent")
+  ⎿  Found 1 file (ctrl+r to expand)
+
+● Search(pattern: "**/*a1*")
+  ⎿  Found 1 file (ctrl+r to expand)
+
+● Read(biomni/agent/a1.py)
+  ⎿  Read 1395 lines (ctrl+r to expand)
+
+● Update Todos
+  ⎿  ☒ 搜索a1 agent相关代码文件  
+     ☐ 分析核心执行逻辑和工作流程
+     ☐ 总结整体架构和关键组件
+
+● 现在让我查看相关的支持文件来更好地理解整体架构：
+
+● Read(biomni/tool/support_tools.py)
+  ⎿  Read 91 lines (ctrl+r to expand)
+
+● Read(biomni/model/retriever.py)
+  ⎿  Read 149 lines (ctrl+r to expand)
+
+● Update Todos
+  ⎿  ☒ 搜索a1 agent相关代码文件  
+     ☒ 分析核心执行逻辑和工作流程
+     ☐ 总结整体架构和关键组件
+
+● 基于对代码的深入分析，让我总结A1 Agent的执行流程和架构：
+
+● Update Todos
+  ⎿  ☒ 搜索a1 agent相关代码文件  
+     ☒ 分析核心执行逻辑和工作流程
+     ☒ 总结整体架构和关键组件
+
+● A1 Agent 执行流程大图
+
+  整体架构
+
+  A1 Agent是一个基于LangGraph的生物医学助手，采用状态图(StateGraph)架构，实现了一个完整的思考-计划-执行-观察的循环
+  工作流程。
+
+  核心工作流程
+
+  1. 初始化阶段 (__init__)
+
+  - 环境准备: 创建数据目录，下载S3数据湖文件和基准测试数据
+  - LLM配置: 初始化大语言模型(默认claude-sonnet-4)
+  - 工具注册: 加载module2api工具字典，初始化ToolRegistry和ToolRetriever
+  - 数据湖: 构建生物医学数据湖索引(data_lake_dict)
+  - 软件库: 准备可用软件库清单(library_content_dict)
+
+  2. 配置阶段 (configure)
+
+  - 系统提示生成: 通过_generate_system_prompt构建包含工具描述、数据湖内容、软件库的系统提示
+  - 状态图构建: 创建包含3个核心节点的StateGraph：
+    - generate: 生成响应和决策
+    - execute: 执行代码
+    - self_critic: 自我批评(可选)
+
+  3. 执行阶段 (go)
+
+  智能资源检索:
+  - 如果启用use_tool_retriever，通过ToolRetriever进行基于提示的检索
+  - 从工具、数据湖、软件库中选择最相关的资源
+  - 动态更新系统提示，只包含相关资源
+
+  状态循环:
+  START → generate → [execute/end]
+        ↑            ↓
+        ←——————————————
+
+  4. 核心节点功能
+
+  Generate节点 (generate):
+  - 接收系统提示 + 历史消息
+  - LLM生成响应，解析<execute>、<solution>、<think>标签
+  - 决定下一步动作：执行代码 或 结束对话
+
+  Execute节点 (execute):
+  - 多语言支持: Python(默认)、R(#!R)、Bash(#!BASH)
+  - 超时控制: 默认600秒执行超时
+  - 持久化环境: Python使用_persistent_namespace保持变量状态
+  - 自定义函数注入: 通过_inject_custom_functions_to_repl注入用户添加的工具
+  - 返回<observation>标签包装的执行结果
+
+  关键特性
+
+  1. 动态工具管理
+
+  - add_tool(): 运行时添加自定义工具
+  - add_data(): 动态添加数据集
+  - add_software(): 扩展software库
+  - 所有自定义资源都会在系统提示中优先突出显示
+
+  2. 智能检索机制
+
+  - ToolRetriever: 基于查询内容智能选择最相关的工具和数据
+  - 上下文优化: 只向LLM提供相关资源，减少token消耗
+  - 优先级策略: 数据库工具、分子生物学工具、文献搜索工具优先
+
+  3. 执行环境隔离与持久化
+
+  - 跨执行持久化: Python变量在多次执行间保持状态
+  - 多语言执行: 支持Python、R、Bash混合编程
+  - 错误处理: 完善的异常捕获和超时机制
+
+  4. 自我批评模式
+
+  - self_critic=True: 启用测试时间扩展
+  - 在给出最终答案前进行多轮自我批评和改进
+  - 通过test_time_scale_round参数控制批评轮数
+
+  核心优势
+
+  1. 智能化: 基于查询内容动态选择相关资源
+  2. 扩展性: 支持运行时添加工具、数据、软件
+  3. 多语言: Python/R/Bash代码无缝执行
+  4. 持久化: 执行环境状态保持
+  5. 专业性: 针对生物医学领域优化的提示工程
+
+> /export 
+  ⎿  Conversation copied to clipboard
+
